@@ -6,7 +6,7 @@ export default function ProductCard({ product, setModal }) {
   return (
     <article className="card product-card" key={product.id}>
       <div className="product-visual" style={{ background: product.color }}>
-        <ProductArt type={product.icon} color={product.color} />
+        {product.image ? <img className="product-image" src={product.image} alt={product.name} /> : <ProductArt type={product.icon} color={product.color} />}
         <span className={`stock-tag ${product.stock < 10 ? "low" : ""}`}>
           {product.stock === 0
             ? "Out of stock"

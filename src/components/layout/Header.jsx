@@ -5,6 +5,8 @@ export default function Header({
   setMobile,
   notifications,
   setNotifications,
+  orders,
+  products,
 }) {
   return (
     <header>
@@ -22,7 +24,7 @@ export default function Header({
       </div>
       <div className="header-actions">
         <span className="demo-chip">
-          <i /> Demo data
+          <i /> Store data
         </span>
         <button
           className="icon-button notification-trigger"
@@ -46,15 +48,9 @@ export default function Header({
               <X size={16} />
             </button>
           </h3>
-          <p>
-            <b>New order received</b>
-            <small>Olivia placed order #1048 · 5 minutes ago</small>
-          </p>
-          <p>
-            <b>Low stock alert</b>
-            <small>Minimal Desk Lamp has 8 units left.</small>
-          </p>
-          <span className="muted">Sample notifications</span>
+          {orders[0] && <p><b>Latest order</b><small>{orders[0].name} placed #{orders[0].orderNumber}</small></p>}
+          {products.filter(product => product.stock < 10).map(product => <p key={product.id}><b>Low stock alert</b><small>{product.name} has {product.stock} units left.</small></p>)}
+          {!orders.length && !products.some(product => product.stock < 10) && <p>No notifications.</p>}
         </div>
       )}
     </header>

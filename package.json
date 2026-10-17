@@ -1,12 +1,13 @@
 {
-  "name": "ecommercedashboard",
+  "name": "commerce-studio-admin",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --test tests/*.test.js"
   },
   "dependencies": {
     "react": "^19.0.0",

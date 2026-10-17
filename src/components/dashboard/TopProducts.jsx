@@ -21,7 +21,7 @@ export default function TopProducts({ products, navigate }) {
       {products.slice(0, 4).map((p, i) => (
         <div className="top-product" key={p.id}>
           <span className="rank">0{i + 1}</span>
-          <ProductArt type={p.icon} color={p.color} />
+          {p.image ? <img className="top-product-image" src={p.image} alt={p.name} /> : <ProductArt type={p.icon} color={p.color} />}
           <div className="product-name">
             <b>{p.name}</b>
             <small>{p.sold} units sold</small>
@@ -29,6 +29,7 @@ export default function TopProducts({ products, navigate }) {
           <strong>{money(p.price * p.sold)}</strong>
         </div>
       ))}
+      {!products.length && <p className="empty">No products yet.</p>}
       <button className="view-products" onClick={() => navigate("Products")}>
         View all products <ArrowRight size={15} />
       </button>

@@ -1,7 +1,7 @@
 import React from "react";
 import { Check } from "lucide-react";
 import { useState } from "react";
-import { initialProducts, orders } from "./data/mockData";
+import { initialProducts, orders as initialOrders } from "./data/mockData";
 import { downloadCsv } from "./utils/exportCsv";
 import useToast from "./hooks/useToast";
 import Sidebar from "./components/layout/Sidebar";
@@ -27,6 +27,7 @@ export default function Dashboard({ onLogout }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All orders");
   const [products, setProducts] = useState(initialProducts);
+  const [orders, setOrders] = useState(initialOrders);
   const [modal, setModal] = useState(null);
   const [notifications, setNotifications] = useState(false);
   const [pagination, setPagination] = useState(1);
@@ -172,6 +173,10 @@ export default function Dashboard({ onLogout }) {
         modal={modal}
         setModal={setModal}
         setProducts={setProducts}
+        onSaveOrder={(updated) => {
+          setOrders((current) => current.map((order) => order.id === updated.id && ["Completed", "Processing", "Pending", "Cancelled"].includes(updated.status) ? { ...order, status: updated.status } : order));
+          setPagination(1);
+        }}
         notify={notify}
       />
     </div>

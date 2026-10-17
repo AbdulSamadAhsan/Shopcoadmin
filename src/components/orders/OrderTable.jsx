@@ -5,7 +5,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { orders, people } from "../../data/mockData";
+
 import { money } from "../../utils/formatters";
 export default function OrderTable({
   compact = false,
@@ -27,7 +27,7 @@ export default function OrderTable({
           <h2>
             {compact ? "Recent orders" : "All orders"}{" "}
             <span className="count">
-              {compact ? orders.length : filtered.length}
+              {filtered.length}
             </span>
           </h2>
           {compact && <p>A little overview of your latest activity</p>}
@@ -47,8 +47,10 @@ export default function OrderTable({
           >
             {[
               "All orders",
+              "Awaiting payment",
               "Completed",
               "Processing",
+              "Shipped",
               "Pending",
               "Cancelled",
             ].map((s) => (
@@ -70,12 +72,12 @@ export default function OrderTable({
             </tr>
           </thead>
           <tbody>
-            {rows.map((o) => (
+            {rows.map((o, index) => (
               <tr
                 key={o.id}
                 onClick={() => setModal({ type: "order", order: o })}
               >
-                <td className="order-id">#{o.id.slice(4)}</td>
+                <td className="order-id">#{o.orderNumber}</td>
                 <td>
                   <div className="customer">
                     <span
@@ -86,7 +88,7 @@ export default function OrderTable({
                           "#e4e9df",
                           "#f2e1d5",
                           "#e6e3ef",
-                        ][people.indexOf(o.name) % 4],
+                        ][index % 4],
                       }}
                     >
                       {o.name
@@ -107,7 +109,7 @@ export default function OrderTable({
                     {o.status}
                   </span>
                 </td>
-                <td className="right">{money(o.amount)}</td>
+                <td className="right">{money(o.amount, o.currency)}</td>
                 <td>
                   <button
                     className="icon-button"

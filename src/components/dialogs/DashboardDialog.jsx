@@ -8,7 +8,9 @@ import HelpDialog from "./HelpDialog";
 export default function DashboardDialog({
   modal,
   setModal,
-  setProducts,
+  saveProduct,
+  deleteProduct,
+  updateStatus,
   notify,
 }) {
   if (!modal) return null;
@@ -41,9 +43,12 @@ export default function DashboardDialog({
           <X size={20} />
         </button>
         <Content
+          key={`${modal.type}-${modal.product?.id || modal.order?.id || "new"}`}
           modal={modal}
           setModal={setModal}
-          setProducts={setProducts}
+          saveProduct={saveProduct}
+          deleteProduct={deleteProduct}
+          updateStatus={updateStatus}
           notify={notify}
         />
       </section>

@@ -12,7 +12,7 @@ export default function LoginPage({ onLogin }) {
         <div className="login-topline">
           <span>COMMERCE STUDIO</span>
           <span className="login-demo-badge">
-            <i /> Demo workspace
+            <i /> Demo sign-in
           </span>
         </div>
         <main className="login-content">
@@ -34,8 +34,8 @@ export default function LoginPage({ onLogin }) {
             <Sparkles size={19} aria-hidden="true" />
             <p>
               <strong>Take a look around.</strong> Use any valid email and a
-              made-up password of 6+ characters. This is a demo, so don’t use a
-              real password.
+              made-up password of 6+ characters. Credentials are not checked or
+              saved. Please do not use a real password.
             </p>
           </div>
           <LoginForm onLogin={onLogin} />

@@ -21,6 +21,7 @@ export default function Sidebar({
   savedName,
   setModal,
   onLogout,
+  orderCount,
 }) {
   const nav = [
     ["Overview", LayoutDashboard],
@@ -75,7 +76,7 @@ export default function Sidebar({
           >
             <Icon size={19} />
             {name}
-            {name === "Orders" && <span className="nav-count">12</span>}
+            {name === "Orders" && <span className="nav-count">{orderCount}</span>}
             {page === name && <span className="nav-dot" />}
           </button>
         ))}
@@ -103,7 +104,7 @@ export default function Sidebar({
         <div className="demo-note">
           <span className="live-dot" /> Your workspace, at a glance
           <p>All the good things happening in your store, in one place.</p>
-          <span className="demo-label">DEMO WORKSPACE</span>
+          <span className="demo-label">STORE WORKSPACE</span>
         </div>
         <button className="profile" onClick={() => navigate("Settings")}>
           <span className="avatar profile-avatar">SA</span>
