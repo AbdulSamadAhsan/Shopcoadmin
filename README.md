@@ -95,3 +95,9 @@ This checkout is linked to the existing Vercel `ecommercedashboard` project, ser
 Every fresh page load starts on the responsive login page. Enter any valid email address and a made-up password of at least six characters (for example `admin@example.com` / `demo123`) to open the dashboard. This is only a UI flow: credentials are never sent to an API, stored, or checked against an account. The dashboard API remains without authentication or authorization.
 
 App keeps the presentation flag in memory and renders the existing dashboard in the same file. Login UI lives under `pages/LoginPage.jsx`, `components/auth/`, and scoped `styles/login.css`. Logout unmounts the dashboard, clears its UI state, and returns to a fresh login form. API-backed products and orders remain saved in the database. No API calls are made until entering the workspace.
+
+## Updating an admin account
+
+In Settings, the Admin account form can update the signed-in admin's email and/or password. A current password is required. New passwords must be at least 15 characters and at most 72 UTF-8 bytes; confirmation is checked in the browser. Leaving the new password blank preserves it. The API rejects duplicate emails and all fields other than email, currentPassword, and newPassword.
+
+`PATCH /api/admin/me` requires an active admin bearer token. Successful updates atomically increment a private session version, invalidating previously issued tokens on all devices, and return to login. Sign in again with the updated credentials. Update your private local credentials notes yourself after making a change; the application never writes passwords to files.

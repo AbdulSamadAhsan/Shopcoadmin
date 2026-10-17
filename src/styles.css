@@ -1709,3 +1709,6 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 
 .item-variant { display: block; color: #7b876f; margin-top: 4px; }
 .status.awaiting { color: #916e24; background: #fcf3df; }
+
+.account-settings { margin-top: 24px; }
+.account-notice { padding: 12px; border-radius: 8px; background: #edf4e9; color: #355e45; margin-bottom: 18px; }

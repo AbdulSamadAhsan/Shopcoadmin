@@ -4,7 +4,7 @@ import LoginBrandPanel from "../components/auth/LoginBrandPanel";
 import LoginForm from "../components/auth/LoginForm";
 import "../styles/login.css";
 
-export default function LoginPage({ onLogin }) {
+export default function LoginPage({ onLogin, notice }) {
   return (
     <div className="login-page">
       <LoginBrandPanel />
@@ -37,6 +37,7 @@ export default function LoginPage({ onLogin }) {
               email and password to manage products, orders, and customers.
             </p>
           </div>
+          {notice && <p className="account-notice" role="status">{notice}</p>}
           <LoginForm onLogin={onLogin} />
         </main>
         <div className="login-bottomline">

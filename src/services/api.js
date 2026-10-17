@@ -50,6 +50,9 @@ export function toOrder(order) {
   };
 }
 export const api = {
+  async updateAccount(data) {
+    return request("/admin/me", { method: "PATCH", body: JSON.stringify(data) });
+  },
   async login(email, password) {
     clearSession();
     const session = await request("/admin/login", { method: "POST", body: JSON.stringify({ email, password }) });

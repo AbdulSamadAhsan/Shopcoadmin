@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
+import AccountSettings from "../components/auth/AccountSettings";
 import { Check } from "lucide-react";
-export default function SettingsPage({ settings, saveSettings, notify }) {
+export default function SettingsPage({ settings, saveSettings, notify, admin, onAccountUpdated }) {
   const [name, setName] = useState(settings?.storeName || "");
   const [email, setEmail] = useState(settings?.contactEmail || "");
   const [busy, setBusy] = useState(false);
@@ -15,7 +16,7 @@ export default function SettingsPage({ settings, saveSettings, notify }) {
     catch (error) { setError(error.message); }
     finally { setBusy(false); }
   }
-  return <section className="card settings">
+  return <><section className="card settings">
     <h2>Store details</h2><p>Changes are saved to your store.</p>
     <form onSubmit={save}>
       <label>Store name<input required maxLength={35} value={name} onChange={event => setName(event.target.value)} /></label>
@@ -24,5 +25,5 @@ export default function SettingsPage({ settings, saveSettings, notify }) {
       {error && <p role="alert" className="form-error">{error}</p>}
       <button className="primary" disabled={busy || !settings}><Check size={16} />{busy ? "Saving..." : "Save changes"}</button>
     </form>
-  </section>;
+  </section><AccountSettings admin={admin} onUpdated={onAccountUpdated} /></>;
 }

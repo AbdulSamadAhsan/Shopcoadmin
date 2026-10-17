@@ -24,17 +24,18 @@ import LoginPage from "./pages/LoginPage";
 import { api, clearSession } from "./services/api";
 export default function App() {
   const [admin, setAdmin] = useState(null);
+  const [sessionNotice, setSessionNotice] = useState("");
   useEffect(() => {
     const expired = () => setAdmin(null);
     window.addEventListener("admin-session-expired", expired);
     return () => window.removeEventListener("admin-session-expired", expired);
   }, []);
   return admin
-    ? <Dashboard admin={admin} onLogout={() => { clearSession(); setAdmin(null); }} />
-    : <LoginPage onLogin={async (email, password) => { const account = await api.login(email, password); setAdmin(account); }} />;
+    ? <Dashboard onAccountUpdated={() => { clearSession(); setAdmin(null); setSessionNotice("Account updated. Sign in with your updated credentials."); }} admin={admin} onLogout={() => { clearSession(); setAdmin(null); }} />
+    : <LoginPage notice={sessionNotice} onLogin={async (email, password) => { const account = await api.login(email, password); setAdmin(account); setSessionNotice(""); }} />;
 }
 
-function Dashboard({ onLogout, admin }) {
+function Dashboard({ onLogout, admin, onAccountUpdated }) {
   const [page, setPage] = useState("Overview");
   const [mobile, setMobile] = useState(false);
   const [period, setPeriod] = useState("This month");
@@ -179,6 +180,8 @@ function Dashboard({ onLogout, admin }) {
           )}
           {page === "Settings" && (
             <SettingsPage
+              admin={admin}
+              onAccountUpdated={onAccountUpdated}
               settings={settings}
               saveSettings={data.saveSettings}
               notify={notify}
