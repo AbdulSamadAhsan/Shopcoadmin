@@ -12,7 +12,7 @@ export default function LoginPage({ onLogin }) {
         <div className="login-topline">
           <span>COMMERCE STUDIO</span>
           <span className="login-demo-badge">
-            <i /> Demo sign-in
+            <i /> Admin workspace
           </span>
         </div>
         <main className="login-content">
@@ -33,9 +33,8 @@ export default function LoginPage({ onLogin }) {
           <div className="login-demo-note" id="login-demo-note">
             <Sparkles size={19} aria-hidden="true" />
             <p>
-              <strong>Take a look around.</strong> Use any valid email and a
-              made-up password of 6+ characters. Credentials are not checked or
-              saved. Please do not use a real password.
+              <strong>Your store workspace.</strong> Sign in with your admin
+              email and password to manage products, orders, and customers.
             </p>
           </div>
           <LoginForm onLogin={onLogin} />

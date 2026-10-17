@@ -1,6 +1,6 @@
 import React from "react";
 import { Check } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useDashboardData from "./hooks/useDashboardData";
 import { getAnalytics } from "./utils/analytics";
 import { downloadCsv } from "./utils/exportCsv";
@@ -21,15 +21,20 @@ import ProductsPage from "./pages/ProductsPage";
 import CustomersPage from "./pages/CustomersPage";
 import SettingsPage from "./pages/SettingsPage";
 import LoginPage from "./pages/LoginPage";
-// Presentation-only sign-in: no credentials or session flags are persisted.
+import { api, clearSession } from "./services/api";
 export default function App() {
-  const [enteredWorkspace, setEnteredWorkspace] = useState(false);
-  return enteredWorkspace
-    ? <Dashboard onLogout={() => setEnteredWorkspace(false)} />
-    : <LoginPage onLogin={() => setEnteredWorkspace(true)} />;
+  const [admin, setAdmin] = useState(null);
+  useEffect(() => {
+    const expired = () => setAdmin(null);
+    window.addEventListener("admin-session-expired", expired);
+    return () => window.removeEventListener("admin-session-expired", expired);
+  }, []);
+  return admin
+    ? <Dashboard admin={admin} onLogout={() => { clearSession(); setAdmin(null); }} />
+    : <LoginPage onLogin={async (email, password) => { const account = await api.login(email, password); setAdmin(account); }} />;
 }
 
-function Dashboard({ onLogout }) {
+function Dashboard({ onLogout, admin }) {
   const [page, setPage] = useState("Overview");
   const [mobile, setMobile] = useState(false);
   const [period, setPeriod] = useState("This month");
@@ -111,6 +116,7 @@ function Dashboard({ onLogout }) {
         navigate={navigate}
         savedName={settings?.storeName || "Store"}
         orderCount={orders.length}
+        admin={admin}
         setModal={setModal}
         onLogout={logout}
       />
@@ -122,6 +128,7 @@ function Dashboard({ onLogout }) {
           setNotifications={setNotifications}
           orders={orders}
           products={products}
+          admin={admin}
         />
         <div className="content">
           {data.loading && <div className="api-message" role="status">Loading store data...</div>}

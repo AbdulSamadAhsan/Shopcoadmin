@@ -5,6 +5,8 @@ import { validateLogin } from "../../utils/validateLogin";
 export default function LoginForm({ onLogin }) {
   const [values, setValues] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
+  const [busy, setBusy] = useState(false);
+  const [serverError, setServerError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
@@ -15,8 +17,10 @@ export default function LoginForm({ onLogin }) {
     setErrors((previous) => ({ ...previous, [name]: undefined }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
+    if (busy) return;
+    setServerError("");
     const nextErrors = validateLogin(values);
     setErrors(nextErrors);
 
@@ -25,9 +29,11 @@ export default function LoginForm({ onLogin }) {
       return;
     }
 
-    // This form demonstrates navigation, not real authentication.
-    // Never send or persist these demo credentials.
-    onLogin();
+    setBusy(true);
+    try { await onLogin(values.email.trim(), values.password); }
+    catch (error) { setServerError(error.message); }
+    finally { setBusy(false); }
+
   }
 
   return (
@@ -68,7 +74,7 @@ export default function LoginForm({ onLogin }) {
             name="password"
             type={showPassword ? "text" : "password"}
             autoComplete="current-password"
-            placeholder="Enter at least 6 characters"
+            placeholder="Enter your password"
             value={values.password}
             onChange={handleChange}
             minLength={6}
@@ -96,8 +102,9 @@ export default function LoginForm({ onLogin }) {
           </p>
         )}
       </div>
-      <button className="login-submit" type="submit">
-        Sign in to dashboard <ArrowRight size={19} />
+      {serverError && <p className="login-error" role="alert">{serverError}</p>}
+      <button className="login-submit" type="submit" disabled={busy}>
+        {busy ? "Signing in..." : "Sign in to dashboard"} <ArrowRight size={19} />
       </button>
       <p className="login-form-footnote">Your next great day starts here.</p>
     </form>

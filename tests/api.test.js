@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { api, toOrder } from '../src/services/api.js';
+import { api, toOrder, clearSession } from '../src/services/api.js';
 import { getAnalytics } from '../src/utils/analytics.js';
 
 test('API adapter paginates, preserves item snapshots, and sends only status updates', async () => {
@@ -32,4 +32,26 @@ test('API adapter paginates, preserves item snapshots, and sends only status upd
     assert.equal(data.categories[0].amount, 25);
     assert.equal(data.excludesOtherCurrencies, true);
   } finally { globalThis.fetch = original; }
+});
+
+test('real login attaches token, clears it on expiry, and never sends it after logout', async () => {
+  const original = globalThis.fetch;
+  const requests = [];
+  globalThis.fetch = async (url, options) => {
+    requests.push(options);
+    return { ok: true, status: 200, json: async () => url.endsWith('/admin/login') ? { success: true, token: 'test-token', expiresIn: 3600, admin: { email: 'admin@example.com' } } : { success: true, products: [] } };
+  };
+  try {
+    await api.login('admin@example.com', 'test-passphrase');
+    await api.products();
+    assert.equal(requests[1].headers.Authorization, 'Bearer test-token');
+    clearSession();
+    await api.products();
+    assert.equal(requests[2].headers.Authorization, undefined);
+    await api.login('admin@example.com', 'test-passphrase');
+    globalThis.fetch = async () => ({ ok: false, status: 401, json: async () => ({ success: false, message: 'Expired token' }) });
+    await assert.rejects(api.products(), /Expired token/);
+    globalThis.fetch = async (url, options) => { assert.equal(options.headers.Authorization, undefined); return { ok: true, status: 200, json: async () => ({ success: true, products: [] }) }; };
+    await api.products();
+  } finally { clearSession(); globalThis.fetch = original; }
 });

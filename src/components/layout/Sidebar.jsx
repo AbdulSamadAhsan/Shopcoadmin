@@ -17,6 +17,7 @@ export default function Sidebar({
   mobile,
   setMobile,
   page,
+  admin,
   navigate,
   savedName,
   setModal,
@@ -107,9 +108,9 @@ export default function Sidebar({
           <span className="demo-label">STORE WORKSPACE</span>
         </div>
         <button className="profile" onClick={() => navigate("Settings")}>
-          <span className="avatar profile-avatar">SA</span>
+          <span className="avatar profile-avatar">{admin.name.split(" ").map(part => part[0]).join("").slice(0, 2)}</span>
           <span>
-            <b>Samad Ahsan</b>
+            <b>{admin.name}</b>
             <small>Store administrator</small>
           </span>
           <Settings size={17} />

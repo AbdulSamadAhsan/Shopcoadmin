@@ -1,17 +1,28 @@
 const API_BASE = (import.meta.env?.VITE_API_URL || (import.meta.env?.PROD ? "https://react-admin-api-two.vercel.app/api" : "http://localhost:4000/api")).replace(/\/$/, "");
 const API_ORIGIN = new URL(API_BASE, globalThis.location?.origin || "http://localhost").origin;
 
+let accessToken = null;
+let expiryTimer;
+export function clearSession() {
+  accessToken = null;
+  clearTimeout(expiryTimer);
+}
+function expiredSession() {
+  clearSession();
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("admin-session-expired"));
+}
 async function request(path, options = {}) {
   let response;
   try {
     response = await fetch(`${API_BASE}${path}`, {
       ...options,
-      headers: { ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }), ...options.headers },
+      headers: { ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }), ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}), ...options.headers },
     });
   } catch (error) {
     if (error.name === "AbortError") throw error;
     throw new Error("Cannot reach the API. Check that the API server is running and the dashboard API URL is correct.");
   }
+  if (response.status === 401 && accessToken) expiredSession();
   const body = await response.json().catch(() => null);
   if (!response.ok || !body || body.success === false) throw new Error(body?.message || `API request failed (${response.status})`);
   return body;
@@ -39,6 +50,13 @@ export function toOrder(order) {
   };
 }
 export const api = {
+  async login(email, password) {
+    clearSession();
+    const session = await request("/admin/login", { method: "POST", body: JSON.stringify({ email, password }) });
+    accessToken = session.token;
+    expiryTimer = setTimeout(expiredSession, session.expiresIn * 1000);
+    return session.admin;
+  },
   async products(signal) { return (await request("/products", { signal })).products.map(toProduct); },
   async orders(signal) {
     const orders = [];

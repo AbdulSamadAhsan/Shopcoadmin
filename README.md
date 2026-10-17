@@ -1,3 +1,5 @@
+> Real admin login is now enabled. Dashboard API routes require a valid bearer token for an active admin account. Passwords are saved only in the local, Git-ignored README.credentials.md. Historical demo/no-auth notes below are superseded.
+
 # Commerce Studio — React admin dashboard
 
 A responsive e-commerce admin dashboard using JavaScript, React and CSS. Connected to `F:\react-admin-api` through a small fetch service. The existing component and page structure is retained. No authentication or authorization is applied to the dashboard API calls.

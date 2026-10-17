@@ -2,6 +2,7 @@ import React from "react";
 import { Bell, X, Menu, ChevronRight } from "lucide-react";
 export default function Header({
   page,
+  admin,
   setMobile,
   notifications,
   setNotifications,
@@ -34,7 +35,7 @@ export default function Header({
           <Bell size={19} />
           <i />
         </button>
-        <div className="header-avatar">SA</div>
+        <div className="header-avatar">{admin.name.split(" ").map(part => part[0]).join("").slice(0, 2)}</div>
       </div>
       {notifications && (
         <div className="notification-panel">
