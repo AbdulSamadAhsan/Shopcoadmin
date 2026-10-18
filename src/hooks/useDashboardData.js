@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../services/api";
+import { getSoldQuantities } from "../utils/analytics";
 
 export default function useDashboardData() {
   const [products, setProducts] = useState([]);
@@ -40,6 +41,10 @@ export default function useDashboardData() {
   async function updateStatus(id, status) {
     const order = await api.updateStatus(id, status);
     setOrders(current => current.map(item => item.id === id ? order : item));
+    if (status === "cancelled") {
+      try { setProducts(await api.products()); }
+      catch (error) { setError(`Order cancelled. Stock display could not refresh: ${error.message}`); }
+    }
     // Totals exclude cancelled orders, so refresh customer spending after status changes.
     try { setCustomers(await api.customers()); }
     catch (error) { setError(`Order saved. Customer totals could not refresh: ${error.message}`); }
@@ -50,5 +55,9 @@ export default function useDashboardData() {
     setSettings(saved);
     return saved;
   }
-  return { products, orders, customers, settings, loading, error, reload, saveProduct, deleteProduct, updateStatus, saveSettings };
+  const productsWithSales = useMemo(() => {
+    const quantities = getSoldQuantities(orders);
+    return products.map(product => ({ ...product, sold: quantities.get(product.id) || 0 }));
+  }, [products, orders]);
+  return { products: productsWithSales, orders, customers, settings, loading, error, reload, saveProduct, deleteProduct, updateStatus, saveSettings };
 }

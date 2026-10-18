@@ -1,5 +1,5 @@
 import React from "react";
-import { Bell, X, Menu, ChevronRight } from "lucide-react";
+import { Bell, X, Menu, ChevronRight, LogOut } from "lucide-react";
 export default function Header({
   page,
   admin,
@@ -8,6 +8,7 @@ export default function Header({
   setNotifications,
   orders,
   products,
+  onLogout,
 }) {
   return (
     <header>
@@ -35,6 +36,7 @@ export default function Header({
           <Bell size={19} />
           <i />
         </button>
+        <button className="header-logout" type="button" onClick={onLogout}><LogOut size={16} /><span>Log out</span></button>
         <div className="header-avatar">{admin.name.split(" ").map(part => part[0]).join("").slice(0, 2)}</div>
       </div>
       {notifications && (

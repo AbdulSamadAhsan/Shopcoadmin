@@ -1,5 +1,5 @@
 import React from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Star } from "lucide-react";
 import ProductArt from "./ProductArt";
 import { money } from "../../utils/formatters";
 export default function ProductCard({ product, setModal }) {
@@ -18,10 +18,12 @@ export default function ProductCard({ product, setModal }) {
       <div className="product-info">
         <small>{product.category}</small>
         <h2>{product.name}</h2>
+        <button className="product-review-trigger" onClick={() => setModal({ type: "reviews", product })} aria-label={`View ratings and reviews for ${product.name}`}><Star size={14} fill="currentColor" />{product.rating ?? 5}/5 · Ratings & reviews</button>
         <div>
           <strong>{money(product.price)}</strong>
           <span>{product.stock} in stock</span>
         </div>
+        <p className="product-units-sold"><strong>{(product.sold || 0).toLocaleString()}</strong> units sold <small>Delivered orders · All time</small></p>
         <div className="product-buttons">
           <button onClick={() => setModal({ type: "product", product })}>
             <Pencil size={14} />

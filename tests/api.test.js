@@ -55,3 +55,74 @@ test('real login attaches token, clears it on expiry, and never sends it after l
     await api.products();
   } finally { clearSession(); globalThis.fetch = original; }
 });
+
+test('refresh restores the saved session without extending expiry and logout removes it', async () => {
+  const originalFetch = globalThis.fetch;
+  const originalStorage = Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage');
+  const storage = new Map();
+  Object.defineProperty(globalThis, 'sessionStorage', { configurable: true, value: {
+    getItem: key => storage.get(key) ?? null,
+    setItem: (key, value) => storage.set(key, value),
+    removeItem: key => storage.delete(key),
+  } });
+  let refreshed;
+  const admin = { email: 'admin@example.com' };
+  globalThis.fetch = async (url, options) => {
+    if (url.endsWith('/admin/login')) return { ok: true, status: 200, json: async () => ({ success: true, token: 'refresh-token', expiresIn: 3600, admin }) };
+    assert.equal(options.headers.Authorization, 'Bearer refresh-token');
+    return { ok: true, status: 200, json: async () => ({ success: true, products: [] }) };
+  };
+  try {
+    await api.login(admin.email, 'test-passphrase');
+    const saved = storage.get('commerce-admin-session');
+    refreshed = await import('../src/services/api.js?refresh-test');
+    assert.deepEqual(refreshed.restoreSession(), admin);
+    await refreshed.api.products();
+    assert.equal(storage.get('commerce-admin-session'), saved);
+    refreshed.clearSession();
+    assert.equal(storage.size, 0);
+    assert.equal(refreshed.restoreSession(), null);
+    storage.set('commerce-admin-session', JSON.stringify({ token: 'expired', admin, expiresAt: Date.now() - 1 }));
+    assert.equal(refreshed.restoreSession(), null);
+    assert.equal(storage.size, 0);
+    storage.set('commerce-admin-session', '{invalid');
+    assert.equal(refreshed.restoreSession(), null);
+    assert.equal(storage.size, 0);
+  } finally {
+    clearSession();
+    refreshed?.clearSession();
+    globalThis.fetch = originalFetch;
+    if (originalStorage) Object.defineProperty(globalThis, 'sessionStorage', originalStorage);
+    else delete globalThis.sessionStorage;
+  }
+});
+
+test('product edits use multipart PUT and preserve image and unedited product fields', async () => {
+  const original = globalThis.fetch;
+  const existing = { _id: 'abc123', name: 'Original', price: 25, stock: 4, image: 'https://example.com/product.jpg', slug: 'original', sales: 8, sizes: ['M'], active: true };
+  const changes = new FormData();
+  changes.set('name', 'Updated product');
+  changes.set('price', '30');
+  changes.set('stock', '5');
+  changes.set('description', 'Updated description');
+  changes.set('brand', 'Shopco');
+  globalThis.fetch = async (url, options) => {
+    assert.match(url, /\/products\/abc123$/);
+    assert.equal(options.method, 'PUT');
+    assert.equal(options.body, changes);
+    assert.equal(options.headers['Content-Type'], undefined);
+    assert.equal(options.body.has('image'), false);
+    assert.equal(options.body.has('sales'), false);
+    return { ok: true, status: 200, json: async () => ({ success: true, product: { ...existing, ...Object.fromEntries(changes), price: 30, stock: 5 } }) };
+  };
+  try {
+    const updated = await api.saveProduct(existing._id, changes);
+    assert.equal(updated.name, 'Updated product');
+    assert.equal(updated.description, 'Updated description');
+    assert.equal(updated.image, existing.image);
+    assert.equal(updated.slug, existing.slug);
+    assert.equal(updated.sold, 8);
+    assert.deepEqual(updated.sizes, ['M']);
+    assert.equal(updated.active, true);
+  } finally { globalThis.fetch = original; }
+});

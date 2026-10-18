@@ -6,7 +6,7 @@ export default function Revenue({ chart, setChart, period, analytics }) {
   const previous = analytics.daily.map(day => revenue ? day.previousRevenue : day.previousOrders);
   const max = Math.max(1, ...values, ...previous);
   return <section className="card revenue">
-    <div className="card-head"><div><h2>Revenue overview</h2><p>{revenue ? "Paid or completed orders in USD" : "Orders received in the selected period"}</p></div><div className="segmented">{["Revenue", "Orders"].map(tab => <button key={tab} className={chart === tab ? "active" : ""} onClick={() => setChart(tab)}>{tab}</button>)}</div></div>
+    <div className="card-head"><div><h2>Revenue overview</h2><p>{revenue ? "Delivered orders in USD" : "Orders received in the selected period"}</p></div><div className="segmented">{["Revenue", "Orders"].map(tab => <button key={tab} className={chart === tab ? "active" : ""} onClick={() => setChart(tab)}>{tab}</button>)}</div></div>
     <div className="chart-summary"><strong>{revenue ? money(analytics.revenue) : analytics.orderCount.toLocaleString()}</strong><div className="legend"><i />{period}<i className="pale" />Previous period</div></div>
     <div className="chart"><div className="axis">{[1, .75, .5, .25, 0].map(factor => <span key={factor}>{revenue ? money(max * factor) : Math.round(max * factor)}</span>)}</div>
       <div className="plot"><div className="gridlines">{[0, 1, 2, 3, 4].map(value => <div key={value} />)}</div>

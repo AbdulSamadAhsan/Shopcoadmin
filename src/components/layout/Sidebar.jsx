@@ -9,9 +9,9 @@ import {
   ChevronDown,
   ArrowUpRight,
   X,
-  LogOut,
   HelpCircle,
   Store,
+  Ticket,
 } from "lucide-react";
 export default function Sidebar({
   mobile,
@@ -21,13 +21,13 @@ export default function Sidebar({
   navigate,
   savedName,
   setModal,
-  onLogout,
   orderCount,
 }) {
   const nav = [
     ["Overview", LayoutDashboard],
     ["Orders", ShoppingBag],
     ["Products", Package],
+    ["Coupons", Ticket],
     ["Customers", Users],
     ["Analytics", ChartNoAxesCombined],
   ];
@@ -44,7 +44,7 @@ export default function Sidebar({
         <span className="brand-icon">
           <ShoppingBag size={22} />
         </span>
-        commerce<span className="brand-dot">.</span>
+        shopco<span className="brand-dot">.</span>
         <button
           className="mobile-close icon-button"
           aria-label="Close menu"
@@ -98,10 +98,6 @@ export default function Sidebar({
         </button>
       </nav>
       <div className="sidebar-bottom">
-        <button className="logout-button" onClick={onLogout}>
-          <LogOut size={18} />
-          Log out
-        </button>
         <div className="demo-note">
           <span className="live-dot" /> Your workspace, at a glance
           <p>All the good things happening in your store, in one place.</p>

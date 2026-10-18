@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import useDashboardData from "./hooks/useDashboardData";
 import { getAnalytics } from "./utils/analytics";
 import { downloadCsv } from "./utils/exportCsv";
+import { pageFromHash, pageHash } from "./utils/navigation";
 import useToast from "./hooks/useToast";
 import Sidebar from "./components/layout/Sidebar";
 import Header from "./components/layout/Header";
@@ -20,10 +21,11 @@ import DashboardDialog from "./components/dialogs/DashboardDialog";
 import ProductsPage from "./pages/ProductsPage";
 import CustomersPage from "./pages/CustomersPage";
 import SettingsPage from "./pages/SettingsPage";
+import CouponsPage from "./pages/CouponsPage";
 import LoginPage from "./pages/LoginPage";
-import { api, clearSession } from "./services/api";
+import { api, clearSession, restoreSession } from "./services/api";
 export default function App() {
-  const [admin, setAdmin] = useState(null);
+  const [admin, setAdmin] = useState(restoreSession);
   const [sessionNotice, setSessionNotice] = useState("");
   useEffect(() => {
     const expired = () => setAdmin(null);
@@ -36,7 +38,7 @@ export default function App() {
 }
 
 function Dashboard({ onLogout, admin, onAccountUpdated }) {
-  const [page, setPage] = useState("Overview");
+  const [page, setPage] = useState(() => pageFromHash(window.location.hash));
   const [mobile, setMobile] = useState(false);
   const [period, setPeriod] = useState("This month");
   const [query, setQuery] = useState("");
@@ -50,7 +52,19 @@ function Dashboard({ onLogout, admin, onAccountUpdated }) {
   const [chart, setChart] = useState("Revenue");
 
   const { toast, notify, clearToast } = useToast();
+  useEffect(() => {
+    const syncPage = () => {
+      const nextPage = pageFromHash(window.location.hash);
+      setPage(nextPage);
+      setQuery(""); setPagination(1); setMobile(false); setModal(null); setNotifications(false);
+      if (window.location.hash !== pageHash(nextPage)) window.history.replaceState(null, "", pageHash(nextPage));
+    };
+    syncPage();
+    window.addEventListener("hashchange", syncPage);
+    return () => window.removeEventListener("hashchange", syncPage);
+  }, []);
   function navigate(nextPage) {
+    window.location.hash = pageHash(nextPage);
     setPage(nextPage);
     setQuery("");
     setPagination(1);
@@ -95,7 +109,7 @@ function Dashboard({ onLogout, admin, onAccountUpdated }) {
               order.amount,
             ]),
           ];
-    downloadCsv(rows, `commerce-${page.toLowerCase()}.csv`);
+    downloadCsv(rows, `shopco-${page.toLowerCase()}.csv`);
     notify("Your CSV export is ready");
   }
   const orderTableProps = {
@@ -119,10 +133,10 @@ function Dashboard({ onLogout, admin, onAccountUpdated }) {
         orderCount={orders.length}
         admin={admin}
         setModal={setModal}
-        onLogout={logout}
       />
       <main>
         <Header
+          onLogout={logout}
           page={page}
           setMobile={setMobile}
           notifications={notifications}
@@ -168,6 +182,7 @@ function Dashboard({ onLogout, admin, onAccountUpdated }) {
             />
           )}
           {page === "Orders" && <OrderTable {...orderTableProps} />}
+          {page === "Coupons" && <CouponsPage notify={notify} />}
           {page === "Products" && (
             <ProductsPage
               products={products}
@@ -197,6 +212,7 @@ function Dashboard({ onLogout, admin, onAccountUpdated }) {
         </div>
       )}
       <DashboardDialog
+        products={products}
         modal={modal}
         setModal={setModal}
         saveProduct={data.saveProduct}

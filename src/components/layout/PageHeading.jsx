@@ -22,6 +22,7 @@ export default function PageHeading({
                 "Here\u2019s what\u2019s happening with your store today.",
               Orders: "Keep every order moving, from checkout to doorstep.",
               Products: "A home for everything you sell.",
+              Coupons: "Create and manage discounts for your customers.",
               Customers: "Get to know the people behind your orders.",
               Analytics:
                 "Turn your store\u2019s numbers into a clearer picture.",
@@ -40,7 +41,7 @@ export default function PageHeading({
             Add product
           </button>
         ) : (
-          page !== "Settings" && (
+          !["Settings", "Coupons"].includes(page) && (
             <>
               <button onClick={exportData}>
                 <Download size={16} />

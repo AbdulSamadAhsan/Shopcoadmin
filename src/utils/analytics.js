@@ -13,7 +13,18 @@ function range(period, now) {
   }
   return { start, end, previousStart };
 }
-const revenueEligible = order => order.apiStatus !== "cancelled" && (order.paymentStatus === "paid" || order.apiStatus === "delivered");
+const revenueEligible = order => order.apiStatus === "delivered";
+export function getSoldQuantities(orders) {
+  const quantities = new Map();
+  for (const order of orders) {
+    if (order.apiStatus !== "delivered") continue;
+    for (const item of order.lineItems || []) {
+      if (!item.productId || !Number.isSafeInteger(item.quantity) || item.quantity < 1) continue;
+      quantities.set(item.productId, (quantities.get(item.productId) || 0) + item.quantity);
+    }
+  }
+  return quantities;
+}
 const sum = orders => orders.reduce((value, order) => value + order.amount, 0);
 const growth = (current, previous) => previous ? (current - previous) / previous * 100 : null;
 export function getAnalytics(orders, products, period, now = new Date()) {

@@ -3,9 +3,30 @@ const API_ORIGIN = new URL(API_BASE, globalThis.location?.origin || "http://loca
 
 let accessToken = null;
 let expiryTimer;
+const SESSION_KEY = "commerce-admin-session";
+function saveSession(session) {
+  try { globalThis.sessionStorage?.setItem(SESSION_KEY, JSON.stringify(session)); } catch {}
+}
+export function restoreSession() {
+  try {
+    const session = JSON.parse(globalThis.sessionStorage?.getItem(SESSION_KEY) || "null");
+    if (!session || typeof session.token !== "string" || !session.token || !session.admin || !Number.isFinite(session.expiresAt) || session.expiresAt <= Date.now()) {
+      clearSession();
+      return null;
+    }
+    accessToken = session.token;
+    clearTimeout(expiryTimer);
+    expiryTimer = setTimeout(expiredSession, session.expiresAt - Date.now());
+    return session.admin;
+  } catch {
+    clearSession();
+    return null;
+  }
+}
 export function clearSession() {
   accessToken = null;
   clearTimeout(expiryTimer);
+  try { globalThis.sessionStorage?.removeItem(SESSION_KEY); } catch {}
 }
 function expiredSession() {
   clearSession();
@@ -57,10 +78,16 @@ export const api = {
     clearSession();
     const session = await request("/admin/login", { method: "POST", body: JSON.stringify({ email, password }) });
     accessToken = session.token;
-    expiryTimer = setTimeout(expiredSession, session.expiresIn * 1000);
+    const expiresAt = Date.now() + session.expiresIn * 1000;
+    saveSession({ token: session.token, admin: session.admin, expiresAt });
+    expiryTimer = setTimeout(expiredSession, expiresAt - Date.now());
     return session.admin;
   },
   async products(signal) { return (await request("/products", { signal })).products.map(toProduct); },
+  async coupons(page, search, signal) { return request(`/coupons?${new URLSearchParams({ page, search })}`, { signal }); },
+  async saveCoupon(id, data) { return request(id ? `/coupons/${id}` : '/coupons', { method: id ? 'PUT' : 'POST', body: JSON.stringify(data) }); },
+  async deleteCoupon(id) { return request(`/coupons/${id}`, { method: 'DELETE' }); },
+  async productReviews(id, page, signal) { return request(`/products/${id}/reviews?page=${page}`, { signal }); },
   async orders(signal) {
     const orders = [];
     let page = 1;

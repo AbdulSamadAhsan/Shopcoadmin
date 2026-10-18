@@ -1,9 +1,15 @@
 import React, { useState } from "react";
 import { Check } from "lucide-react";
 
-export default function ProductForm({ modal, setModal, saveProduct, notify }) {
+export default function ProductForm({ modal, setModal, saveProduct, notify, products = [] }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [basePrice, setBasePrice] = useState(modal.product ? (modal.product.oldPrice > modal.product.price ? modal.product.oldPrice : modal.product.price) : "");
+  const [discount, setDiscount] = useState(() => {
+    const value = Number.parseFloat(modal.product?.discount || "0");
+    return Number.isFinite(value) && value >= 0 && value <= 100 ? value : 0;
+  });
+  const salePrice = Math.round(Number(basePrice) * (1 - Number(discount) / 100) * 100) / 100;
   const [primaryColor, setPrimaryColor] = useState(modal.product?.color || "#00c12b");
   const [colorOptions, setColorOptions] = useState(() => [...new Set(["#00c12b", "#4f4631", "#314f4a", "#31344f", modal.product?.color, ...(modal.product?.colors || [])].filter(Boolean).map(color => color.toLowerCase()))]);
   const [sizeOptions, setSizeOptions] = useState(() => [...new Set(["Small", "Medium", "Large", "X-Large", ...(modal.product?.sizes || [])])]);
@@ -13,6 +19,21 @@ export default function ProductForm({ modal, setModal, saveProduct, notify }) {
   const [colorDraft, setColorDraft] = useState("#000000");
   const [editingSize, setEditingSize] = useState("");
   const [sizeDraft, setSizeDraft] = useState("");
+  const [styleOptions, setStyleOptions] = useState(() => {
+    const values = [modal.product?.style, "Casual", "Formal", "Party", "Gym", ...products.map(product => product.style)].filter(Boolean).map(value => value.trim());
+    return values.filter((value, index) => values.findIndex(option => option.toLowerCase() === value.toLowerCase()) === index);
+  });
+  const [selectedStyle, setSelectedStyle] = useState(modal.product?.style?.trim() || "");
+  const [editingStyle, setEditingStyle] = useState("");
+  const [styleDraft, setStyleDraft] = useState("");
+  function saveStyle() {
+    const value = styleDraft.trim();
+    if (!value || value.length > 100) { setError("Enter a style name of 1 to 100 characters."); return; }
+    if (styleOptions.some(option => option !== editingStyle && option.toLowerCase() === value.toLowerCase())) { setError("That style already exists."); return; }
+    setStyleOptions(current => editingStyle ? current.map(option => option === editingStyle ? value : option) : [...current, value]);
+    setSelectedStyle(value);
+    setEditingStyle(""); setStyleDraft(""); setError("");
+  }
   function toggle(value, setSelected) { setSelected(current => current.includes(value) ? current.filter(item => item !== value) : [...current, value]); }
   function saveOption(kind) {
     const isColor = kind === "color";
@@ -35,6 +56,13 @@ export default function ProductForm({ modal, setModal, saveProduct, notify }) {
     const name = data.get("name").trim();
     if (!name) { setError("Enter a product name."); return; }
     data.set("name", name);
+    const percentage = Number(discount);
+    if (basePrice === "" || !Number.isFinite(Number(basePrice)) || Number(basePrice) < 0 || !Number.isFinite(percentage) || percentage < 0 || percentage > 100) { setError("Enter a valid price and a discount between 0 and 100%."); return; }
+    data.set("price", String(salePrice));
+    data.set("oldPrice", percentage > 0 ? String(Number(basePrice)) : "0");
+    data.set("discount", `${percentage}%`);
+    data.set("description", String(data.get("description") || "").trim());
+    for (const field of ["brand", "style"]) data.set(field, String(data.get(field) || "").trim());
     const colors = data.getAll("colors");
     const sizes = data.getAll("sizes");
     data.set("colors", JSON.stringify([...new Set(colors)]));
@@ -103,14 +131,25 @@ export default function ProductForm({ modal, setModal, saveProduct, notify }) {
             </div>
           </details>
         </fieldset>
-        {modal.product && <>
-          <label>Description<textarea name="description" rows={3} defaultValue={modal.product.description || ""} /></label>
-          <label>Brand<input name="brand" defaultValue={modal.product.brand || ""} /></label>
-        </>}
+        <label>Product description<textarea name="description" rows={4} maxLength={4000} placeholder="Describe the product, features, and materials" defaultValue={modal.product?.description || ""} /></label>
+        <label>Brand<input name="brand" maxLength={100} placeholder="e.g. Nike, Zara, Gucci" defaultValue={modal.product?.brand || ""} /></label>
+        <div>
+          <label>Style<select name="style" value={selectedStyle} onChange={event => setSelectedStyle(event.target.value)}><option value="">No style</option>{styleOptions.map(style => <option key={style}>{style}</option>)}</select></label>
+          <details className="product-option-editor"><summary>Add or edit styles</summary>
+            <div className="product-option-controls">
+              <label>Style to edit<select value={editingStyle} onChange={event => { setEditingStyle(event.target.value); setStyleDraft(event.target.value); }}><option value="">Add new style</option>{styleOptions.map(style => <option key={style}>{style}</option>)}</select></label>
+              <label>Style name<input maxLength={100} value={styleDraft} placeholder="e.g. Streetwear" onChange={event => setStyleDraft(event.target.value)} /></label>
+              <button type="button" disabled={busy} onClick={saveStyle}>{editingStyle ? "Update style" : "Add style"}</button>
+            </div>
+            <small className="product-color-hint">Save the product to keep its selected style. Renaming an option here only changes this product.</small>
+          </details>
+        </div>
         <div className="form-row">
-          <label>Price (USD)<input name="price" type="number" required min="0" step="0.01" defaultValue={modal.product?.price} /></label>
+          <label>Original price (USD)<input name="price" type="number" required min="0" step="0.01" value={basePrice} onChange={event => setBasePrice(event.target.value)} /></label>
           <label>Stock<input name="stock" type="number" required min="0" step="1" defaultValue={modal.product?.stock || 0} /></label>
         </div>
+        <label>Discount (%)<input type="number" min="0" max="100" step="0.01" value={discount} onChange={event => setDiscount(event.target.value)} /></label>
+        <small>Use 0 for no discount. Selling price: <strong>{Number.isFinite(salePrice) ? `$${salePrice.toFixed(2)}` : "—"}</strong></small>
         {modal.product?.image && <img className="product-preview" src={modal.product.image} alt={modal.product.name} />}
         <label>{modal.product ? "Replace image (optional)" : "Product image"}<input name="image" type="file" accept="image/png,image/jpeg,image/webp" required={!modal.product} /></label>
         <small>JPEG, PNG, or WebP. Maximum 3 MB.</small>

@@ -5,7 +5,9 @@ import CustomerDetails from "./CustomerDetails";
 import ProductForm from "./ProductForm";
 import DeleteProductDialog from "./DeleteProductDialog";
 import HelpDialog from "./HelpDialog";
+import ProductReviews from "./ProductReviews";
 export default function DashboardDialog({
+  products,
   modal,
   setModal,
   saveProduct,
@@ -18,6 +20,7 @@ export default function DashboardDialog({
     order: OrderDetails,
     customer: CustomerDetails,
     product: ProductForm,
+    reviews: ProductReviews,
     delete: DeleteProductDialog,
     help: HelpDialog,
   };
@@ -43,6 +46,7 @@ export default function DashboardDialog({
           <X size={20} />
         </button>
         <Content
+          products={products}
           key={`${modal.type}-${modal.product?.id || modal.order?.id || "new"}`}
           modal={modal}
           setModal={setModal}
