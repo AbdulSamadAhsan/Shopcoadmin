@@ -93,6 +93,11 @@ export default function ProductForm({ modal, setModal, saveProduct, notify, prod
       <p>{modal.product ? "Update the details below. Your current image is kept unless you choose a replacement." : "Changes are saved to your catalog."}</p>
       <form onSubmit={handleSubmit}>
         <label>Product name<input name="name" required maxLength={200} defaultValue={modal.product?.name} /></label>
+        <label>Product status<select name="active" defaultValue={String(modal.product?.active !== false)} disabled={busy} aria-describedby="product-status-help">
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select></label>
+        <small id="product-status-help">Active products are visible in the shop and eligible for home-page sections. Inactive products stay hidden from customers and remain available here.</small>
         <label>Category<select name="category" defaultValue={modal.product ? modal.product.category || "" : "Electronics"}>
           <option value="">Uncategorized</option>
           {categories.map(category => <option key={category}>{category}</option>)}

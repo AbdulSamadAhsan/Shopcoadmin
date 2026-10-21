@@ -1789,3 +1789,7 @@ form textarea { resize: vertical; font: inherit; }
 .coupon-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 16px; }
 form .coupon-active-control { display: flex; align-items: center; gap: 8px; }form .coupon-active-control input { width: 16px; height: 16px; margin: 0; }
 .coupon-delete-confirm { border-top: 1px solid #ead8d4; margin-top: 16px; padding-top: 8px; }.coupon-count { color: #6c7860; font-size: 12px; }
+
+.product-visibility { margin: 8px 0; font-size: 12px; font-weight: 600; }
+.product-visibility.active { color: #28603c; }
+.product-visibility.inactive { color: #62685d; }

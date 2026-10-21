@@ -17,6 +17,9 @@ export default function ProductCard({ product, setModal }) {
       </div>
       <div className="product-info">
         <small>{product.category}</small>
+        <p className={`product-visibility ${product.active === false ? "inactive" : "active"}`}>
+          {product.active === false ? "Inactive · Hidden from shop" : "Active · Visible in shop"}
+        </p>
         <h2>{product.name}</h2>
         <button className="product-review-trigger" onClick={() => setModal({ type: "reviews", product })} aria-label={`View ratings and reviews for ${product.name}`}><Star size={14} fill="currentColor" />{product.rating ?? 5}/5 · Ratings & reviews</button>
         <div>
