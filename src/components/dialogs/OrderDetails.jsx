@@ -25,6 +25,7 @@ export default function OrderDetails({ modal, setModal, updateStatus, notify }) 
     <dl>
       <dt>Customer</dt><dd>{order.name}</dd>
       <dt>Email</dt><dd>{order.email}</dd>
+      <dt>Mobile</dt><dd>{order.customer?.phone || "Not provided"}</dd>
       <dt>Date</dt><dd>{order.date}</dd>
       <dt>Payment</dt><dd>{order.paymentStatus}</dd>
       <dt>Shipping</dt><dd>{Object.values(order.shippingAddress || {}).filter(Boolean).join(", ") || "Not provided"}</dd>
