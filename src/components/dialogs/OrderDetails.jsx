@@ -40,7 +40,7 @@ export default function OrderDetails({ modal, setModal, updateStatus, notify }) 
     {order.subtotal !== undefined && <dl>
       <dt>Subtotal</dt><dd>{money(order.subtotal, order.currency)}</dd>
       <dt>Discount</dt><dd>-{money(order.discount, order.currency)}</dd>
-      {order.gst !== undefined && <><dt>{order.gstRate ? `GST (${Number((order.gstRate * 100).toFixed(2))}%)` : "GST"}</dt><dd>{money(order.gst, order.currency)}</dd></>}
+      <dt>{order.gstRate ? `GST (${Number((order.gstRate * 100).toFixed(2))}%)` : "GST"}</dt><dd>{order.gst != null ? money(order.gst, order.currency) : "Not recorded"}</dd>
       <dt>Delivery</dt><dd>{money(order.deliveryFee, order.currency)}</dd>
     </dl>}
     <div className="order-total"><span>Order total</span><strong>{money(order.amount, order.currency)}</strong></div>
