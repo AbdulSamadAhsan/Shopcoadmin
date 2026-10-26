@@ -27,9 +27,9 @@ export default function AccountSettings({ admin, onUpdated }) {
     <form onSubmit={save}>
       <label>Admin email<input name="email" type="email" autoComplete="username" required maxLength={254} defaultValue={admin.email} /></label>
       <label>Current password<input name="currentPassword" type="password" autoComplete="current-password" required /></label>
-      <label>New password<input name="newPassword" type="password" autoComplete="new-password" minLength={15} aria-describedby="new-password-help" /></label>
-      <small id="new-password-help">Leave blank to keep your password. Use a memorable passphrase of at least 15 characters.</small>
-      <label>Confirm new password<input name="confirmPassword" type="password" autoComplete="new-password" minLength={15} /></label>
+      <label>New password<input name="newPassword" type="password" autoComplete="new-password" minLength={6} aria-describedby="new-password-help" /></label>
+      <small id="new-password-help">Leave blank to keep your password. Use at least 6 characters; longer passwords are allowed.</small>
+      <label>Confirm new password<input name="confirmPassword" type="password" autoComplete="new-password" minLength={6} /></label>
       {error && <p className="form-error" role="alert">{error}</p>}
       <button className="primary" disabled={busy} type="submit">{busy ? "Updating account..." : "Update account"}</button>
     </form>
