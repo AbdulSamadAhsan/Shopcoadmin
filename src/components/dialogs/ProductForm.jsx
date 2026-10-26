@@ -15,6 +15,7 @@ export default function ProductForm({ modal, setModal, saveProduct, notify, prod
   const [sizeOptions, setSizeOptions] = useState(() => [...new Set(["Small", "Medium", "Large", "X-Large", ...(modal.product?.sizes || [])])]);
   const [selectedColors, setSelectedColors] = useState(() => (modal.product?.colors || ["#00c12b", "#4f4631", "#314f4a", "#31344f"]).map(color => color.toLowerCase()));
   const [selectedSizes, setSelectedSizes] = useState(modal.product?.sizes || ["Small", "Medium", "Large", "X-Large"]);
+  const [sizePrices, setSizePrices] = useState(() => Object.fromEntries((modal.product?.sizePrices || []).map(row => [row.size, row.price])));
   const [editingColor, setEditingColor] = useState("");
   const [colorDraft, setColorDraft] = useState("#000000");
   const [editingSize, setEditingSize] = useState("");
@@ -45,6 +46,7 @@ export default function ProductForm({ modal, setModal, saveProduct, notify, prod
     (isColor ? setColorOptions : setSizeOptions)(current => editing ? current.map(item => item === editing ? value : item) : [...current, value]);
     (isColor ? setSelectedColors : setSelectedSizes)(current => editing ? current.map(item => item === editing ? value : item) : [...current, value]);
     if (isColor && primaryColor.toLowerCase() === editing) setPrimaryColor(value);
+    if (!isColor && editing) setSizePrices(current => Object.fromEntries(Object.entries(current).map(([size, price]) => [size === editing ? value : size, price])));
     if (isColor) { setEditingColor(""); setColorDraft("#000000"); }
     else { setEditingSize(""); setSizeDraft(""); }
     setError("");
@@ -65,6 +67,9 @@ export default function ProductForm({ modal, setModal, saveProduct, notify, prod
     for (const field of ["brand", "style"]) data.set(field, String(data.get(field) || "").trim());
     const colors = data.getAll("colors");
     const sizes = data.getAll("sizes");
+    const overrides = sizes.filter(size => sizePrices[size] !== undefined && String(sizePrices[size]).trim() !== '').map(size => ({ size, price: Number(sizePrices[size]) }));
+    if (overrides.some(row => !Number.isFinite(row.price) || row.price < 0)) { setError('Enter a valid non-negative price for each size, or leave it blank.'); return; }
+    data.set('sizePrices', JSON.stringify(overrides));
     data.set("colors", JSON.stringify([...new Set(colors)]));
     data.set("sizes", JSON.stringify([...new Set(sizes)]));
     const file = data.get("image");
@@ -150,6 +155,13 @@ export default function ProductForm({ modal, setModal, saveProduct, notify, prod
         </div>
         <label>Discount (%)<input type="number" min="0" max="100" step="0.01" value={discount} onChange={event => setDiscount(event.target.value)} /></label>
         <small>Use 0 for no discount. Selling price: <strong>{Number.isFinite(salePrice) ? `$${salePrice.toFixed(2)}` : "—"}</strong></small>
+        <fieldset className="product-size-prices"><legend>Prices by size (USD)</legend>
+          <p>Optional original prices. Leave a size blank to use the main product price. The discount above applies to all sizes.</p>
+          <div className="form-row">{selectedSizes.map(size => <label key={size}>{size} price (USD)
+            <input type="number" min="0" step="0.01" value={sizePrices[size] ?? ''} placeholder={basePrice === '' ? 'Use main price' : String(basePrice)} onChange={event => setSizePrices(current => ({ ...current, [size]: event.target.value }))} />
+            <small>Selling price: ${((sizePrices[size] === undefined || String(sizePrices[size]).trim() === '' ? Number(basePrice) : Number(sizePrices[size])) * (1 - Number(discount) / 100)).toFixed(2)}</small>
+          </label>)}</div>
+        </fieldset>
         {modal.product?.image && <img className="product-preview" src={modal.product.image} alt={modal.product.name} />}
         <label>{modal.product ? "Replace image (optional)" : "Product image"}<input name="image" type="file" accept="image/png,image/jpeg,image/webp" required={!modal.product} /></label>
         <small>JPEG, PNG, or WebP. Maximum 3 MB.</small>

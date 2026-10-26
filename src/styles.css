@@ -1758,6 +1758,9 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .account-notice { padding: 12px; border-radius: 8px; background: #edf4e9; color: #355e45; margin-bottom: 18px; }
 
 .product-form-actions { display: flex; align-items: center; gap: 12px; }
+.product-size-prices { border: 1px solid #dce3d4; border-radius: 8px; padding: 16px; min-width: 0; }
+.product-size-prices legend { color: #34452c; font-size: 13px; font-weight: 600; padding: 0 6px; }
+.product-size-prices p, .product-size-prices small { font-size: 11px; color: #6c7860; line-height: 1.5; }
 form textarea { resize: vertical; font: inherit; }
 
 .sidebar > * { flex-shrink: 0; }
