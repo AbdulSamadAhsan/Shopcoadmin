@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { api } from "../../services/api";
+import SettingsPasswordInput from './SettingsPasswordInput';
 
 export default function AccountSettings({ admin, onUpdated }) {
   const [busy, setBusy] = useState(false);
@@ -26,10 +27,10 @@ export default function AccountSettings({ admin, onUpdated }) {
     <p>Update your sign-in details. Confirm your current password to save. You will need to sign in again on all devices.</p>
     <form onSubmit={save}>
       <label>Admin email<input name="email" type="email" autoComplete="username" required maxLength={254} defaultValue={admin.email} /></label>
-      <label>Current password<input name="currentPassword" type="password" autoComplete="current-password" required /></label>
-      <label>New password<input name="newPassword" type="password" autoComplete="new-password" minLength={6} aria-describedby="new-password-help" /></label>
+      <SettingsPasswordInput label="Current password" name="currentPassword" autoComplete="current-password" required />
+      <SettingsPasswordInput label="New password" name="newPassword" autoComplete="new-password" minLength={6} aria-describedby="new-password-help" />
       <small id="new-password-help">Leave blank to keep your password. Use at least 6 characters; longer passwords are allowed.</small>
-      <label>Confirm new password<input name="confirmPassword" type="password" autoComplete="new-password" minLength={6} /></label>
+      <SettingsPasswordInput label="Confirm new password" name="confirmPassword" autoComplete="new-password" minLength={6} />
       {error && <p className="form-error" role="alert">{error}</p>}
       <button className="primary" disabled={busy} type="submit">{busy ? "Updating account..." : "Update account"}</button>
     </form>
